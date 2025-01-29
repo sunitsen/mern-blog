@@ -52,5 +52,7 @@ so the issue was like ther i am useing to local server so i have to make separte
 and other is by changing useref from from elemnt i have use a id insted of formdata.current
 
 
-Form submitted
-  
+- Section 7 - Store user in sessions
+ confusion with context api
+Section 8 - User Navigation + Sign Out
+make desing for signout in dropdown of nav gray and border

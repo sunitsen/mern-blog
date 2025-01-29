@@ -6,26 +6,30 @@ import { Link } from "react-router-dom";
 import { Toaster, toast } from "react-hot-toast";
 import axios from "axios";
 import {storeInSession} from "../common/session";
-
-
+import { Navigate } from "react-router-dom";
+//use context
+import { useContext } from "react";
+import {UserContext} from "../App"
 
 const UserAuthForm = ({ type }) => {
 
+  let {userAuth: {access_token}, setUserAuth } = useContext(UserContext)
+  console.log(access_token);
 
+  
   const userAuthThroughServer = (serverRoute, formData) => {
 
     axios
       .post(import.meta.env.VITE_SERVER_URL + serverRoute, formData)
       .then(({ data }) => {
         storeInSession("user", JSON.stringify(data));
-        console.log(sessionStorage)
+        setUserAuth(data);
         toast.success("Authentication successful");
       })
       .catch(({ response }) => {
         toast.error(response?.data?.error || "Something went wrong");
       });
   };
-
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -67,10 +71,10 @@ const UserAuthForm = ({ type }) => {
 
   };
 
-
-
-  
   return (
+    access_token ?
+    <Navigate to="/" />
+   : 
     <AnimationWrapper keyValue={type}>
       <section className="h-cover flex items-center justify-center">
         <Toaster />
