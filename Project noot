@@ -1,0 +1,56 @@
+clone git repo using this link : https://github.com/kunaal438/mern-blogging-website.git
+
+Intro
+
+Section 0 - Download Github Repo
+Section 1 - Navbar
+Section 2 - Setting Up Routes
+Section 4 - User Auth. Form ( UI )
+ 
+Expriance :
+Learned dynamic logic with the type prop to determine "Sign In" or "Sign Up" page behavior, rendering conditional elements like the "Full Name" field. Explored reusable InputBox components with props for icons, placeholders, and types. Added interactive features like toggling password visibility with dynamic icons.
+
+Issue:
+Observed form re-rendering twice unnecessarily due to state or animation logic.
+ 
+
+Section 5 - Page Animation
+it might need fix for animation may be ther are some re redaring issue
+
+
+Section 5 - Server Setup + User Auth. Form Routes
+
+mongodb name : react-blog-project
+claster name : react-blog-project
+username : sunitsen50
+password : nk7tsg5aVhZr3bzh
+connecting string of driver : mongodb+srv://sunitsen50:nk7tsg5aVhZr3bzh@react-blog-project.vaedt.mongodb.net/?retryWrites=true&w=majority&appName=react-blog-project
+
+Create server and create Mongodb connect them with connection string use in .env using rest client extention to check respons in vs code
+learn new thing to generate random key :  require('crypto').randomBytes(64).toString('hex')
+
+Key Things to Remember:
+
+    Always validate inputs from the client (email, password, etc.) to ensure data integrity and security.
+    Use bcrypt for secure password storage (hashing passwords before saving them).
+    When creating a user, ensure that the username is unique.
+    JWT tokens should be used for user authentication, and they should be kept secure.
+    Handle errors properly (e.g., database errors, invalid inputs).
+    Make sure your server listens on a specified port (e.g., 3000).
+
+
+ Section 6 - Connecting Form UI to server
+ have 2 issue one is for 
+  userAuthForm.page.jsx:31:12
+  POST
+http://localhost:3000/signin
+[HTTP/1.1 404 Not Found 67ms]
+
+i have solved both of problem with help of chat gpt
+so the issue was like ther i am useing to local server so i have to make separte server and i have did this from diffrent env file
+
+and other is by changing useref from from elemnt i have use a id insted of formdata.current
+
+
+Form submitted
+  
