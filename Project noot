@@ -56,3 +56,24 @@ and other is by changing useref from from elemnt i have use a id insted of formd
  confusion with context api
 Section 8 - User Navigation + Sign Out
 make desing for signout in dropdown of nav gray and border
+
+
+
+ Section 1 - Setting Up "/editor" route
+
+ Section 2 - Editor Page Component
+
+ Section 3 - Blog Editor - Navbar
+
+ Section 4 - Blog Editor - Banner
+
+ crete aws account 
+ username : Sunit sen
+ pass: 877862
+
+
+
+ importing asw
+ setting up s3 bucket
+ create
+ 

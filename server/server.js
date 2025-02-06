@@ -5,6 +5,7 @@ import bcrypt from "bcrypt";
 import { nanoid } from "nanoid";
 import jwt from "jsonwebtoken";
 import cors from "cors";
+import cloudinary from "cloudinary";
 
 // Firebase Admin
 import admin from "firebase-admin";
@@ -14,11 +15,18 @@ import { getAuth } from "firebase-admin/auth";
 // Schema
 import User from "./Schema/User.js";
 
+
+
 const server = express();
 const PORT = process.env.PORT || 3000;
 
 
-
+// config
+cloudinary.v2.config({
+    cloud_name: 'dkeaeg11x',
+    api_key: '168123699794666',
+    api_secret: '4Aqqe1vXL8DeMhOma7gHHeLmW9M'
+});
 
 // Initialize Firebase Admin SDK
 admin.initializeApp({
@@ -26,12 +34,9 @@ admin.initializeApp({
 });
 
 
-
-
-
-
 server.use(express.json());
 server.use(cors());
+
 
 // Connect to MongoDB
 mongoose.connect(process.env.DB_LOCATION, { autoIndex: true })
@@ -40,6 +45,7 @@ mongoose.connect(process.env.DB_LOCATION, { autoIndex: true })
         console.error('MongoDB connection failed', err);
         process.exit(1);
     });
+
 
 // Helper function to format user data
 const formDatatoSend = (user) => {
@@ -115,11 +121,6 @@ server.post('/signin', async (req, res) => {
     }
 });
 
-
-
-
-
-
 // Google Authentication
 server.post("/google-auth", async (req, res) => {
     let { access_token } = req.body;
@@ -169,11 +170,34 @@ server.post("/google-auth", async (req, res) => {
 
 
 
+server.get('/get-upload-url', async (req, res) => {
+    try {
+        const timestamp = Math.round(new Date().getTime() / 1000);
+        const signature = cloudinary.utils.api_sign_request(
+            { timestamp, upload_preset: process.env.CLOUDINARY_UPLOAD_PRESET },
+            process.env.CLOUDINARY_API_SECRET
+        );
 
-
-
-
-
-
+        res.status(200).json({
+            url: `https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload`,
+            timestamp,
+            signature,
+            api_key: process.env.CLOUDINARY_API_KEY,
+            upload_preset: process.env.CLOUDINARY_UPLOAD_PRESET
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    }
+});
 
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+
+
+
+
+
+
+
+

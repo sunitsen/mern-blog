@@ -19,7 +19,6 @@ const UserAuthForm = ({ type }) => {
 
   
   const userAuthThroughServer = (serverRoute, formData) => {
-
     axios
       .post(import.meta.env.VITE_SERVER_URL + serverRoute, formData)
       .then(({ data }) => {
@@ -31,6 +30,8 @@ const UserAuthForm = ({ type }) => {
         toast.error(response?.data?.error || "Something went wrong");
       });
   };
+
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -73,13 +74,6 @@ const UserAuthForm = ({ type }) => {
   };
 
 
-
-
-
-
-
-
-
 const handelGoogleAuth = (e) =>{ 
   e.preventDefault();
   authWithGoogle()
@@ -96,18 +90,8 @@ const handelGoogleAuth = (e) =>{
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
   return (
+
     access_token ?
     <Navigate to="/" />
    : 
@@ -127,7 +111,7 @@ const handelGoogleAuth = (e) =>{
               icon="fi-rr-user"
             />
           )}
-
+          
           <InputBox
             name="email"
             type="email"
