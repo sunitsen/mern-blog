@@ -39,7 +39,7 @@ const UserNavigation = () => {
         </Link>
 
         {/* Link to settings page */}
-        <Link to="seetings/edit-profile" className="link pl-8 py-4">
+        <Link to="settings/edit-profile" className="link pl-8 py-4">
           Settings
         </Link>
 

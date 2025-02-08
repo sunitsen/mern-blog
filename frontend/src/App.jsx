@@ -31,7 +31,7 @@ const App = () => {
     // Provide the userAuth state and setUserAuth function globally via context
     <UserContext.Provider value={{ userAuth, setUserAuth }}>
       <Routes>
-        <Route path="/editor" element={<Editor/>} />
+        <Route path="/editor" element={<Editor />} />
         {/* Navbar component is rendered at the top of each page */}
         <Route path="/" element={<Navbar />}>
           {/* Route for the Sign In page */}

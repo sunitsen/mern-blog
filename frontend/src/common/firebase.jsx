@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
-import {GoogleAuthProvider, getAuth, signInWithPopup} from "firebase/auth"
+import { GoogleAuthProvider, getAuth, signInWithPopup } from "firebase/auth";
+
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -9,25 +10,21 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-
-
-
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-
-
-//google auth
+// Google auth
 const provider = new GoogleAuthProvider();
-const auth = getAuth()
+const auth = getAuth();
 
-export const authWithGoogle = async () =>{
+export const authWithGoogle = async () => {
   let user = null;
   await signInWithPopup(auth, provider)
-  .then((result) =>{
-     user = result.user
-  }).catch((err) =>{
-      console.log(err)
-  })
-  return user
-}
+    .then((result) => {
+      user = result.user;
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+  return user;
+};

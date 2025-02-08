@@ -1,31 +1,35 @@
 import { useState, useRef, useContext, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import logo from '../imgs/logo.png';
 import AnimatedWrapper from '../common/page-animation';
 import defaultBanner from '../imgs/blog banner.png';
 import { EditorContext } from '../pages/editor.pages'; // ✅ Correct import
 import EditorJS from '@editorjs/editorjs';
-import { uploadImage } from '../common/Cloudinary ';
+import { uploadImage } from '../common/Cloudinary';
 import { tools } from './tools.component';
 import { Toaster, toast } from "react-hot-toast";
+import axios from 'axios';
+import { UserContext } from '../App';
 
 const BlogEditor = () => {
   const blogBannerRef = useRef(null);
   const [bannerUrl, setBannerUrl] = useState(defaultBanner);
 
   // Accessing context
-const {blog, blog: {title, content}, setBlog, editorState, setEditorState, textEditor, setTextEditor} = useContext(EditorContext);
-
+  const { blog, blog: { title, content, banner, tags, des }, setBlog, editorState, setEditorState, textEditor, setTextEditor } = useContext(EditorContext);
+  let { userAuth: { access_token } } = useContext(UserContext);
+  let navigate = useNavigate();
 
   // Initialize EditorJS
   useEffect(() => {
-    setTextEditor(new EditorJS({
-      holder: 'textEditor',
-      data: content ,  // ✅ Ensure proper data
-      tools: tools,
-      placeholder: 'Write your blog content here...'
-    }));
-
+    if (!textEditor.isReady) {
+      setTextEditor(new EditorJS({
+        holder: 'textEditor',
+        data: content,  // ✅ Ensure proper data
+        tools: tools,
+        placeholder: 'Write your blog content here...'
+      }));
+    }
 
     if (blog.banner) {
       setBannerUrl(blog.banner);
@@ -40,7 +44,7 @@ const {blog, blog: {title, content}, setBlog, editorState, setEditorState, textE
         const loadingToast = toast.loading("Uploading image...");
         const url = await uploadImage(file);
         toast.dismiss(loadingToast);
-        
+
         if (url) {
           setBannerUrl(url);
           toast.success("Uploaded");
@@ -91,6 +95,47 @@ const {blog, blog: {title, content}, setBlog, editorState, setEditorState, textE
     }
   };
 
+  const handelSaveDraft = (e) => {
+    if (e.target.className.includes('disabled')) {
+      return;
+    }
+
+    if (!title.length) {
+      return toast.error('Write blog title before saving it as a draft');
+    }
+
+    let loadingToast = toast.loading('Saving Draft...');
+
+    e.target.classList.add('disabled');
+
+    if (textEditor.isReady) {
+      let blogobj = {
+        title, banner, des, tags, content, draft: true
+      };
+      textEditor.save().then(content => {
+        axios.post(import.meta.env.VITE_SERVER_URL + '/create-blog', blogobj, {
+          headers: {
+            'Authorization': `Bearer ${access_token}`
+          }
+        })
+          .then(() => {
+            e.target.classList.remove('disabled');
+            toast.dismiss(loadingToast);
+            toast.success('Saved');
+
+            setTimeout(() => {
+              navigate("/");
+            }, 500);
+          })
+          .catch(({ response }) => {
+            e.target.classList.remove('disabled');
+            toast.dismiss(loadingToast);
+            return toast.error(response?.data?.error || 'Something went wrong');
+          });
+      });
+    }
+  };
+
   return (
     <>
       <Toaster />
@@ -104,7 +149,7 @@ const {blog, blog: {title, content}, setBlog, editorState, setEditorState, textE
         </p>
         <div className="flex gap-4 ml-auto">
           <button className="btn-dark py-2" onClick={handlePublish}>Publish</button>
-          <button className="btn-light py-2">Save Draft</button>
+          <button className="btn-light py-2" onClick={handelSaveDraft}>Save Draft</button>
         </div>
       </nav>
 

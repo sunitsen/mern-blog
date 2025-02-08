@@ -1,29 +1,23 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useCallback } from 'react';
 import { Link, Outlet } from 'react-router-dom';
 import logo from '../imgs/logo.png';
 import { UserContext } from '../App';
 import UserNavigation from './user-navigation.component';
 
 const Navbar = () => {
-  // State to toggle the visibility of the search box
   const [searchBoxVisible, setSearchBoxVisible] = useState(false);
-
-  // State to toggle the visibility of the user navigation panel
   const [userNavPanel, setUserNavPanel] = useState(false);
 
-  // Toggle visibility of user navigation panel
-  const handelUserNavPanel = () => {
-    setUserNavPanel(currentValue => !currentValue);
-  };
+  const handelUserNavPanel = useCallback(() => {
+    setUserNavPanel((prev) => !prev);
+  }, []);
 
-  // Handle blur event to close the user nav panel when clicking outside
-  const handelBlur = () => {
+  const handelBlur = useCallback(() => {
     setTimeout(() => {
       setUserNavPanel(false);
     }, 200);
-  };
+  }, []);
 
-  // Accessing user authentication details (user data, access_token, and profile image)
   const { userAuth, userAuth: { access_token, profile_img } } = useContext(UserContext);
 
   return (
@@ -34,13 +28,9 @@ const Navbar = () => {
           <img src={logo} alt="Logo" className='w-full' />
         </Link>
 
-        {/* Search Bar - Visibility controlled by searchBoxVisible */}
+        {/* Search Bar */}
         <div
-          className={
-            "absolute bg-white w-full left-0 top-full mt-0.5 border-b border-gray py-4 px-[5vw] " +
-            "md:border-0 md:block md:relative md:inset-0 md:p-0 md:w-auto " +
-            (searchBoxVisible ? "show" : "hide")
-          }
+          className={`absolute bg-white w-full left-0 top-full mt-0.5 border-b border-gray py-4 px-[5vw] md:border-0 md:block md:relative md:inset-0 md:p-0 md:w-auto ${searchBoxVisible ? 'show' : 'hide'}`}
         >
           <input
             type="text"
@@ -55,29 +45,28 @@ const Navbar = () => {
           {/* Mobile Search Button */}
           <button
             className='md:hidden bg-grey w-12 h-12 rounded-full flex items-center justify-center'
-            onClick={() => setSearchBoxVisible(currentValue => !currentValue)} // Toggle search box visibility
+            onClick={() => setSearchBoxVisible((prev) => !prev)}
           >
             <i className='fi fi-rr-search text-xl'></i>
           </button>
 
-          {/* Write Link - Visible on desktop */}
+          {/* Write Link */}
           <Link to="/" className='hidden md:flex gap-2 link'>
             <i className='fi fi-rr-file-edit'></i>
             <p>Write</p>
           </Link>
 
           {
-            // Conditional rendering based on access_token
             access_token ?
               <>
-                {/* Notification Button - Visible when user is logged in */}
+                {/* Notification Button */}
                 <Link to="/dashboard/notification">
                   <button className='w-12 h-12 rounded-full bg-gray relative hover:bg-black/10'>
                     <i className='fi fi-rr-bell text-2xl black mt-1'></i>
                   </button>
                 </Link>
 
-                {/* User Profile Image - Clicking shows user navigation */}
+                {/* User Profile Image */}
                 <div className='relative' onClick={handelUserNavPanel} onBlur={handelBlur}>
                   <button className='w-12 h-12 mt-1'>
                     <img
@@ -87,18 +76,16 @@ const Navbar = () => {
                     />
                   </button>
 
-                  {/* User Navigation Panel - Conditional rendering */}
-                  {userNavPanel ? <UserNavigation /> : ""}
+                  {/* User Navigation Panel */}
+                  {userNavPanel && <UserNavigation />}
                 </div>
               </>
               :
               <>
-                {/* Sign In Link - Visible when user is not logged in */}
+                {/* Sign In and Sign Up Links */}
                 <Link className='btn-dark py-2' to='/signin'>
                   Sign In
                 </Link>
-
-                {/* Sign Up Link - Visible on desktop only */}
                 <Link className='btn-light py-2 hidden md:block' to='/Signup'>
                   Sign Up
                 </Link>
@@ -107,7 +94,6 @@ const Navbar = () => {
         </div>
       </nav>
 
-      {/* Outlet for nested routing */}
       <Outlet />
     </>
   );

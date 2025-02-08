@@ -6,6 +6,7 @@ import { nanoid } from "nanoid";
 import jwt from "jsonwebtoken";
 import cors from "cors";
 import cloudinary from "cloudinary";
+import Blog from "./Schema/Blog.js";
 
 // Firebase Admin
 import admin from "firebase-admin";
@@ -15,11 +16,8 @@ import { getAuth } from "firebase-admin/auth";
 // Schema
 import User from "./Schema/User.js";
 
-
-
 const server = express();
 const PORT = process.env.PORT || 3000;
-
 
 // config
 cloudinary.v2.config({
@@ -33,10 +31,8 @@ admin.initializeApp({
     credential: admin.credential.cert(serviceAccountKey),
 });
 
-
 server.use(express.json());
 server.use(cors());
-
 
 // Connect to MongoDB
 mongoose.connect(process.env.DB_LOCATION, { autoIndex: true })
@@ -46,7 +42,26 @@ mongoose.connect(process.env.DB_LOCATION, { autoIndex: true })
         process.exit(1);
     });
 
-
+const verifyJWT = (req, res, next) => {
+        const authHeader = req.headers['authorization'];
+        console.log("Authorization Header:", authHeader);  // Log the complete header
+    
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+            return res.status(401).json({ "error": "No access token or wrong format" });
+        }
+    
+        const token = authHeader.split(" ")[1];
+        console.log("Token:", token); // Log the extracted token
+    
+        jwt.verify(token, process.env.SECRET_ACCESS_KEY, (err, user) => {
+            if (err) {
+                return res.status(403).json({ "error": "Invalid access token" });
+            }
+            req.user = user.id;
+            next();
+        });
+};
+    
 // Helper function to format user data
 const formDatatoSend = (user) => {
     const access_token = jwt.sign({ id: user._id }, process.env.SECRET_ACCESS_KEY);
@@ -168,8 +183,6 @@ server.post("/google-auth", async (req, res) => {
     })
 });
 
-
-
 server.get('/get-upload-url', async (req, res) => {
     try {
         const timestamp = Math.round(new Date().getTime() / 1000);
@@ -190,6 +203,75 @@ server.get('/get-upload-url', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+server.post('/create-blog', verifyJWT, (req, res) => {
+    let authorId = req.user;
+    let { title, des, banner, tags, content, draft = undefined } = req.body;
+
+    if (!title || !title.length) {
+        return res.status(403).json({ "error": "You Must provide a blog title" });
+    }
+
+    if(!draft){
+        
+    
+        if (!des || des.length > 200) {
+            return res.status(403).json({ "error": "You must provide a blog description under 200 characters" });
+        }
+    
+        if (!banner || !banner.length) {
+            return res.status(403).json({ "error": "You must provide a banner to publish it" });
+        }
+    
+        if (!content?.blocks || content.blocks.length === 0) { // Fixes 'undefined' error
+            return res.status(403).json({ "error": "There must be some blog content to publish it" });
+        }
+    
+        if (!tags || tags.length > 10) {
+            return res.status(403).json({ "error": "Provide up to 10 tags to publish your blog" });
+        }
+    }
+
+   
+
+    let blog_id = title.replace(/[^a-zA-Z0-9]/g, ' ').replace(/\s+/g, "-").trim() + nanoid();
+
+    let blog = new Blog({
+        title, 
+        des, 
+        banner, 
+        tags, 
+        content, 
+        author: authorId, 
+        blog_id, 
+        draft: Boolean(draft)
+    });
+
+    blog.save()
+        .then(blog => {
+            let incrementVal = draft ? 0 : 1;
+
+            User.findOneAndUpdate(
+                { _id: authorId },
+                { 
+                    $inc: { "account_info.total_posts": incrementVal }, 
+                    $push: { "blogs": blog._id } 
+                }
+            ).then(user => {
+                return res.status(200).json({ id: blog.blog_id });
+            }).catch(err => {
+                return res.status(500).json({ "error": "Failed to update total post number" });
+            });
+
+        })
+        .catch(err => {
+            return res.status(500).json({ "error": err.message });
+        });
+});
+
+
+
+
 
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 

@@ -29,7 +29,6 @@ const Tag = ({ tag, tagIndex }) => {
 
       // Remove contentEditable
       e.target.setAttribute("contenteditable", false);
-    
     }
   };
 
@@ -40,7 +39,6 @@ const Tag = ({ tag, tagIndex }) => {
         className="outline-none"
         onClick={addEditable}
         onKeyDown={handleTagEdit}
-         // Remove editable on blur
       >
         {tag}
       </p>
@@ -52,8 +50,6 @@ const Tag = ({ tag, tagIndex }) => {
       >
         <i className="fi fi-br-cross text-sm pointer-events-none"></i>
       </button>
-
-    
     </div>
   );
 };
