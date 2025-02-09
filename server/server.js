@@ -16,8 +16,10 @@ import { getAuth } from "firebase-admin/auth";
 // Schema
 import User from "./Schema/User.js";
 
+
 const server = express();
 const PORT = process.env.PORT || 3000;
+
 
 // config
 cloudinary.v2.config({
@@ -25,6 +27,7 @@ cloudinary.v2.config({
     api_key: '168123699794666',
     api_secret: '4Aqqe1vXL8DeMhOma7gHHeLmW9M'
 });
+
 
 // Initialize Firebase Admin SDK
 admin.initializeApp({
@@ -73,6 +76,9 @@ const formDatatoSend = (user) => {
     };
 };
 
+
+
+
 const generateUserName = async (email) => {
     let username = email.split('@')[0];
     const isUsernameNotUnique = await User.exists({ "personal_info.username": username });
@@ -113,6 +119,9 @@ server.post('/signup', async (req, res) => {
         return res.status(500).json({ "error": err.message });
     }
 });
+
+
+
 
 // User Sign-in
 server.post('/signin', async (req, res) => {
@@ -183,6 +192,14 @@ server.post("/google-auth", async (req, res) => {
     })
 });
 
+
+
+
+
+
+
+
+
 server.get('/get-upload-url', async (req, res) => {
     try {
         const timestamp = Math.round(new Date().getTime() / 1000);
@@ -249,8 +266,7 @@ server.post('/create-blog', verifyJWT, (req, res) => {
 
     blog.save()
         .then(blog => {
-            let incrementVal = draft ? 0 : 1;
-
+            let incrementVal = draft ? 0 : 1; 
             User.findOneAndUpdate(
                 { _id: authorId },
                 { 
@@ -268,9 +284,6 @@ server.post('/create-blog', verifyJWT, (req, res) => {
             return res.status(500).json({ "error": err.message });
         });
 });
-
-
-
 
 
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
