@@ -10,7 +10,9 @@ import Blog from "./Schema/Blog.js";
 
 // Firebase Admin
 import admin from "firebase-admin";
-import serviceAccountKey from "./mern-blog-74aa2-firebase-adminsdk-fbsvc-a8bcca4434.json" assert { type: "json" };
+
+// use own servive account key from firebsde project setting > service account
+import serviceAccountKey from "./mern-blog-74aa2-firebase-adminsdk-fbsvc-808d30de2c.json" assert { type: "json" };
 import { getAuth } from "firebase-admin/auth";
 
 // Schema
@@ -76,9 +78,6 @@ const formDatatoSend = (user) => {
     };
 };
 
-
-
-
 const generateUserName = async (email) => {
     let username = email.split('@')[0];
     const isUsernameNotUnique = await User.exists({ "personal_info.username": username });
@@ -87,6 +86,9 @@ const generateUserName = async (email) => {
     }
     return username;
 };
+
+
+
 
 // User Signup
 server.post('/signup', async (req, res) => {
@@ -119,9 +121,6 @@ server.post('/signup', async (req, res) => {
         return res.status(500).json({ "error": err.message });
     }
 });
-
-
-
 
 // User Sign-in
 server.post('/signin', async (req, res) => {
@@ -192,14 +191,6 @@ server.post("/google-auth", async (req, res) => {
     })
 });
 
-
-
-
-
-
-
-
-
 server.get('/get-upload-url', async (req, res) => {
     try {
         const timestamp = Math.round(new Date().getTime() / 1000);
@@ -266,7 +257,8 @@ server.post('/create-blog', verifyJWT, (req, res) => {
 
     blog.save()
         .then(blog => {
-            let incrementVal = draft ? 0 : 1; 
+            let incrementVal = draft ? 0 : 1;
+
             User.findOneAndUpdate(
                 { _id: authorId },
                 { 
