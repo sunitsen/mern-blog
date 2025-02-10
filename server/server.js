@@ -12,7 +12,7 @@ import Blog from "./Schema/Blog.js";
 import admin from "firebase-admin";
 
 // use own servive account key from firebsde project setting > service account
-import serviceAccountKey from "./mern-blog-74aa2-firebase-adminsdk-fbsvc-808d30de2c.json" assert { type: "json" };
+import serviceAccountKey from "../mern-blog-74aa2-firebase-adminsdk-fbsvc-808d30de2c.json" assert { type: "json" };
 import { getAuth } from "firebase-admin/auth";
 
 // Schema
@@ -21,7 +21,6 @@ import User from "./Schema/User.js";
 
 const server = express();
 const PORT = process.env.PORT || 3000;
-
 
 // config
 cloudinary.v2.config({
@@ -48,15 +47,13 @@ mongoose.connect(process.env.DB_LOCATION, { autoIndex: true })
     });
 
 const verifyJWT = (req, res, next) => {
+
         const authHeader = req.headers['authorization'];
-        console.log("Authorization Header:", authHeader);  // Log the complete header
-    
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
             return res.status(401).json({ "error": "No access token or wrong format" });
         }
     
         const token = authHeader.split(" ")[1];
-        console.log("Token:", token); // Log the extracted token
     
         jwt.verify(token, process.env.SECRET_ACCESS_KEY, (err, user) => {
             if (err) {
@@ -92,6 +89,7 @@ const generateUserName = async (email) => {
 
 // User Signup
 server.post('/signup', async (req, res) => {
+
     let { fullname, email, password } = req.body;
     const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
     const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/;
@@ -222,7 +220,6 @@ server.post('/create-blog', verifyJWT, (req, res) => {
 
     if(!draft){
         
-    
         if (!des || des.length > 200) {
             return res.status(403).json({ "error": "You must provide a blog description under 200 characters" });
         }

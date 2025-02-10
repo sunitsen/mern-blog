@@ -16,7 +16,9 @@ const BlogEditor = () => {
   const [bannerUrl, setBannerUrl] = useState(defaultBanner);
 
   // Accessing context
-  const { blog, blog: { title, content, banner, tags, des }, setBlog, editorState, setEditorState, textEditor, setTextEditor } = useContext(EditorContext);
+  const { blog, blog: { title, content, banner, tags, des }, setBlog, editorState, 
+  setEditorState, textEditor, setTextEditor } = useContext(EditorContext);
+
   let { userAuth: { access_token } } = useContext(UserContext);
   let navigate = useNavigate();
 
