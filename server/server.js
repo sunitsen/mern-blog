@@ -12,7 +12,7 @@ import Blog from "./Schema/Blog.js";
 import admin from "firebase-admin";
 
 // use own servive account key from firebsde project setting > service account
-import serviceAccountKey from "../mern-blog-74aa2-firebase-adminsdk-fbsvc-808d30de2c.json" assert { type: "json" };
+
 import { getAuth } from "firebase-admin/auth";
 
 // Schema
