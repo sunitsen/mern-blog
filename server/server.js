@@ -12,7 +12,7 @@ import Blog from "./Schema/Blog.js";
 import admin from "firebase-admin";
 
 // use own servive account key from firebsde project setting > service account
-
+import serviceAccountKey from "../mern-blog-74aa2-firebase-adminsdk-fbsvc-808d30de2c.json" assert { type: "json" };
 import { getAuth } from "firebase-admin/auth";
 
 // Schema
@@ -83,8 +83,6 @@ const generateUserName = async (email) => {
     }
     return username;
 };
-
-
 
 
 // User Signup
@@ -210,6 +208,66 @@ server.get('/get-upload-url', async (req, res) => {
     }
 });
 
+
+server.get("/trending-blogs", async (req, res) => {
+        const blogs = await Blog.find({ draft: false })
+            .populate("author", "personal_info.profile_img personal_info.username personal_info.fullname -_id") // Populate personal_info for author
+            .sort({ "activity.total_read": -1, "activity.total_like": -1, "publishedAt": -1 })
+            .select("blog_id title publishedAt -_id") // Select only the necessary fields for the blog
+            .limit(5);
+
+        console.log(blogs);  // Add this to check if `author` is populated correctly
+
+        return res.status(200).json({ blogs });
+ 
+});
+
+server.get('/latest-blog', (req, res) => {
+    let maxLimit = 5;
+
+    Blog.find({ draft: false })
+        .populate("author", "personal_info.profile_img personal_info.username personal_info.fullname -_id") // Populate the `author` field with `personal_info`
+        .sort({ publishedAt: -1 }) // Sort in descending order of published date
+        .select("blog_id title des banner tags activity publishedAt -_id") // Select only the necessary fields for the blog
+        .limit(maxLimit)
+        .then(blogs => {
+            return res.status(200).json({ blogs });
+        })
+        .catch(err => {
+            return res.status(500).json({ error: err.message });
+        });
+});
+
+  
+
+
+server.post("/search-blogs", (req, res) =>{
+    let {tag} = req.body
+    let findQuery = {tags: tag, draft: false}
+    let maxLimit = 5;
+
+    Blog.find(findQuery)
+    .populate("author", "personal_info.profile_img personal_info.username personal_info.fullname -_id") // Populate the `author` field with `personal_info`
+        .sort({ publishedAt: -1 }) // Sort in descending order of published date
+        .select("blog_id title des banner tags activity publishedAt -_id") // Select only the necessary fields for the blog
+        .limit(maxLimit)
+        .then(blogs => {
+            return res.status(200).json({ blogs });
+        })
+      
+        .catch(err => {
+            return res.status(500).json({ error: err.message });
+        });
+})
+
+
+
+
+
+
+
+
+
 server.post('/create-blog', verifyJWT, (req, res) => {
     let authorId = req.user;
     let { title, des, banner, tags, content, draft = undefined } = req.body;
@@ -273,6 +331,11 @@ server.post('/create-blog', verifyJWT, (req, res) => {
             return res.status(500).json({ "error": err.message });
         });
 });
+
+
+
+
+
 
 
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
