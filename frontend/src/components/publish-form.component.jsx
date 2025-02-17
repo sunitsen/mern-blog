@@ -8,47 +8,55 @@ import { UserContext } from '../App';
 import { useNavigate } from 'react-router-dom';
 
 const PublishForm = () => {
-  let charecterLimit = 200;
-  let tagLimit = 2;
-  let { blog, blog: { banner, title, tags, des, content }, setEditorState, setBlog } = useContext(EditorContext);
-  let { userAuth: { access_token } } = useContext(UserContext);
-  let navigate = useNavigate();
+  const characterLimit = 200;
+  const tagLimit = 2;
 
-  const handelCloseEvent = () => {
+  // Destructuring blog data and context
+  const { blog, blog: { banner, title, tags, des, content }, setEditorState, setBlog } = useContext(EditorContext);
+  const { userAuth: { access_token } } = useContext(UserContext);
+  const navigate = useNavigate();
+
+  // Handle close event
+  const handleCloseEvent = () => {
     setEditorState("editor");
-  }
+  };
 
-  const handelBlogTitleChange = (e) => {
-    let input = e.target;
+  // Handle blog title change
+  const handleBlogTitleChange = (e) => {
+    const input = e.target;
     setBlog({ ...blog, title: input.value });
-  }
+  };
 
-  const handelBlogDesChange = (e) => {
-    let input = e.target;
+  // Handle description change
+  const handleBlogDesChange = (e) => {
+    const input = e.target;
     setBlog({ ...blog, des: input.value });
-  }
+  };
 
+  // Prevent Enter key in title input
   const handleTitleKeyDown = (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
     }
   };
 
+  // Handle tag addition with Enter/Comma key
   const handleKeyDown = (e) => {
-    if (e.keyCode == 13 || e.keyCode == 188) {
+    if (e.keyCode === 13 || e.keyCode === 188) {
       e.preventDefault();
-      let tag = e.target.value;
+      const tag = e.target.value.trim();
       if (tags.length < tagLimit) {
-        if (!tags.includes(tag) && tag.length) {
+        if (tag && !tags.includes(tag)) {
           setBlog({ ...blog, tags: [...tags, tag] });
         }
       } else {
-        toast.error(`You can add max ${tagLimit} tags`);
+        toast.error(`You can add a maximum of ${tagLimit} tags`);
       }
       e.target.value = "";
     }
-  }
+  };
 
+  // Publish the blog post
   const publishBlog = (e) => {
     if (e.target.className.includes('disabled')) {
       return;
@@ -59,29 +67,32 @@ const PublishForm = () => {
     }
 
     if (!des.length) {
-      return toast.error('Write description about your blog within 200 characters');
+      return toast.error('Write a description about your blog within 200 characters');
     }
 
-    if (des.length > charecterLimit) {
-      return toast.error(`Write description about your blog within ${charecterLimit} characters`);
+    if (des.length > characterLimit) {
+      return toast.error(`Write a description about your blog within ${characterLimit} characters`);
     }
 
     if (!tags.length) {
       return toast.error('Add at least one tag to publish your blog');
     }
 
-    let loadingToast = toast.loading('Publishing your blog...');
+    const loadingToast = toast.loading('Publishing your blog...');
 
     e.target.classList.add('disabled');
 
-    let blogobj = {
-      title, banner, des, tags, content, draft: false
+    const blogObj = {
+      title,
+      banner,
+      des,
+      tags,
+      content,
+      draft: false
     };
 
-    axios.post(import.meta.env.VITE_SERVER_URL + '/create-blog', blogobj, {
-      headers: {
-        'Authorization': `Bearer ${access_token}`
-      }
+    axios.post(import.meta.env.VITE_SERVER_URL + '/create-blog', blogObj, {
+      headers: { 'Authorization': `Bearer ${access_token}` }
     })
       .then(() => {
         e.target.classList.remove('disabled');
@@ -97,7 +108,7 @@ const PublishForm = () => {
         toast.dismiss(loadingToast);
         return toast.error(response?.data?.error || 'Something went wrong');
       });
-  }
+  };
 
   return (
     <AnimatedWrapper>
@@ -105,42 +116,44 @@ const PublishForm = () => {
         <Toaster />
         <button
           className='w-12 h-12 absolute right-[5vw] z-10 top-[5%] lg:top-[10%]'
-          onClick={handelCloseEvent}
+          onClick={handleCloseEvent}
         >
           <i className='fi fi-br-cross'></i>
         </button>
 
+        {/* Preview Section */}
         <div className='max-w-[550px] center'>
           <p className='text-dark-gray mb-1'>Preview</p>
           <div className='w-full aspect-video rounded-lg overflow-hidden bg-gray mt-4'>
-            <img src={banner} />
+            <img src={banner || "/path/to/default-banner.jpg"} alt="Banner" /> {/* Fallback banner */}
           </div>
           <h1 className='text-4xl font-medium mt-2 leading-tight line-clamp-1'>{title}</h1>
           <p className='font-gelasio line-clamp-2 text-xl leading-7 mt-4'>{des}</p>
         </div>
 
-        <div className='border-gray lg:bodrer-1 lg:pl-8'>
+        {/* Publish Form Section */}
+        <div className='border-gray lg:border-1 lg:pl-8'>
           <p className='text-dark-gray mb-2 mt-9'>Blog Title</p>
           <input
             type="text"
             placeholder='Blog Title'
             defaultValue={title}
             className='input-box pl-4'
-            onChange={handelBlogTitleChange}
+            onChange={handleBlogTitleChange}
           />
 
           <p className='text-dark-gray mb-2 mt-9'>Short description about your blog</p>
           <textarea
             defaultValue={des}
-            maxLength={charecterLimit}
+            maxLength={characterLimit}
             className='h-40 resize-none leading-7 input-box pl-4'
-            onChange={handelBlogDesChange}
+            onChange={handleBlogDesChange}
             onKeyDown={handleTitleKeyDown}
           ></textarea>
 
-          <p className='mt-1 text-dark-gray text-sm text-right'>{charecterLimit - des.length} characters left</p>
+          <p className='mt-1 text-dark-gray text-sm text-right'>{characterLimit - des.length} characters left</p>
 
-          <p className='text-dark-gray mb-2 mt-9'>Topics - (Help is searching and ranking your blog post)</p>
+          <p className='text-dark-gray mb-2 mt-9'>Topics - (Help in searching and ranking your blog post)</p>
 
           <div className='relative input-box pl-2 py-2 pb-4'>
             <input
@@ -149,18 +162,17 @@ const PublishForm = () => {
               className='sticky input-box bg-white top-0 left-0 pl-4 mb-3 focus:bg-white'
               onKeyDown={handleKeyDown}
             />
-            {tags.map((tag, index) => {
-              return <Tag key={index} tag={tag} tagIndex={index} />
-            })}
+            {tags.map((tag, index) => (
+              <Tag key={index} tag={tag} tagIndex={index} />
+            ))}
           </div>
 
           <p className='mt-1 mb-4 text-dark-gray text-right'>{tagLimit - tags.length} Tag Left</p>
           <button className="btn-dark px-8" onClick={publishBlog}>Publish</button>
         </div>
-
       </section>
     </AnimatedWrapper>
   );
-}
+};
 
 export default PublishForm;

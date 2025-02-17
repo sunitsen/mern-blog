@@ -13,9 +13,9 @@ import { authWithGoogle } from "../common/firebase";
 const validateForm = (formData, type) => {
   const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
   const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/;
-  
+
   const { fullname, email, password } = formData;
-  
+
   if (type === "signup" && fullname && fullname.length < 3) {
     return "Full name must be at least 3 characters long";
   }

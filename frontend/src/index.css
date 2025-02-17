@@ -124,3 +124,11 @@
 .cdx-settings-button[data-tune='stretched'] {
   display: none;
 }
+
+
+.text-gray-custom{
+    color: #9e9e9e
+}
+.border-color-gray{
+    border-color: #f3f3f3
+}

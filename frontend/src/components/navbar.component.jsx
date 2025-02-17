@@ -1,5 +1,5 @@
 import React, { useContext, useState, useCallback } from 'react';
-import { Link, Outlet } from 'react-router-dom';
+import { Link, Outlet, useNavigate } from 'react-router-dom';
 import logo from '../imgs/logo.png';
 import { UserContext } from '../App';
 import UserNavigation from './user-navigation.component';
@@ -7,11 +7,14 @@ import UserNavigation from './user-navigation.component';
 const Navbar = () => {
   const [searchBoxVisible, setSearchBoxVisible] = useState(false);
   const [userNavPanel, setUserNavPanel] = useState(false);
-
+  let navigate = useNavigate();
+  
+  // Toggle user navigation panel visibility
   const handelUserNavPanel = useCallback(() => {
     setUserNavPanel((prev) => !prev);
   }, []);
 
+  // Hide user navigation panel on blur
   const handelBlur = useCallback(() => {
     setTimeout(() => {
       setUserNavPanel(false);
@@ -19,6 +22,14 @@ const Navbar = () => {
   }, []);
 
   const { userAuth, userAuth: { access_token, profile_img } } = useContext(UserContext);
+
+  // Search function triggered on pressing 'Enter'
+  const handelSearch = (e) => {
+    let query = e.target.value;
+    if (e.keyCode === 13 && query.length) {
+      navigate(`/search/${query}`);
+    }
+  };
 
   return (
     <>
@@ -30,9 +41,10 @@ const Navbar = () => {
 
         {/* Search Bar */}
         <div
-          className={`absolute bg-white w-full left-0 top-full mt-0.5 border-b border-gray py-4 px-[5vw] md:border-0 md:block md:relative md:inset-0 md:p-0 md:w-auto ${searchBoxVisible ? 'show' : 'hide'}`}
+          className={`absolute bg-white w-full left-0 top-full mt-0.5 border-b border-gray py-4 px-[5vw] md:border-0 md:relative md:inset-0 md:p-0 md:w-auto ${searchBoxVisible ? 'block' : 'hidden'} md:block`}
         >
           <input
+            onKeyDown={handelSearch}
             type="text"
             placeholder='Search'
             className='w-full md:w-auto bg-grey p-4 pl-6 pr-[12%] md:pr-6 rounded-full placeholder:text-dark-grey md:pl-12'
@@ -56,41 +68,40 @@ const Navbar = () => {
             <p>Write</p>
           </Link>
 
-          {
-            access_token ?
-              <>
-                {/* Notification Button */}
-                <Link to="/dashboard/notification">
-                  <button className='w-12 h-12 rounded-full bg-gray relative hover:bg-black/10'>
-                    <i className='fi fi-rr-bell text-2xl black mt-1'></i>
-                  </button>
-                </Link>
+          {access_token ? (
+            <>
+              {/* Notification Button */}
+              <Link to="/dashboard/notification">
+                <button className='w-12 h-12 rounded-full bg-gray relative hover:bg-black/10'>
+                  <i className='fi fi-rr-bell text-2xl black mt-1'></i>
+                </button>
+              </Link>
 
-                {/* User Profile Image */}
-                <div className='relative' onClick={handelUserNavPanel} onBlur={handelBlur}>
-                  <button className='w-12 h-12 mt-1'>
-                    <img
-                      src={profile_img}
-                      alt="Profile"
-                      className='w-full h-full object-cover rounded-full'
-                    />
-                  </button>
+              {/* User Profile Image */}
+              <div className='relative' onClick={handelUserNavPanel} onBlur={handelBlur}>
+                <button className='w-12 h-12 mt-1'>
+                  <img
+                    src={profile_img}
+                    alt="Profile"
+                    className='w-full h-full object-cover rounded-full'
+                  />
+                </button>
 
-                  {/* User Navigation Panel */}
-                  {userNavPanel && <UserNavigation />}
-                </div>
-              </>
-              :
-              <>
-                {/* Sign In and Sign Up Links */}
-                <Link className='btn-dark py-2' to='/signin'>
-                  Sign In
-                </Link>
-                <Link className='btn-light py-2 hidden md:block' to='/Signup'>
-                  Sign Up
-                </Link>
-              </>
-          }
+                {/* User Navigation Panel */}
+                {userNavPanel && <UserNavigation />}
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Sign In and Sign Up Links */}
+              <Link className='btn-dark py-2' to='/signin'>
+                Sign In
+              </Link>
+              <Link className='btn-light py-2 hidden md:block' to='/Signup'>
+                Sign Up
+              </Link>
+            </>
+          )}
         </div>
       </nav>
 

@@ -24,9 +24,9 @@ const PORT = process.env.PORT || 3000;
 
 // config
 cloudinary.v2.config({
-    cloud_name: 'dkeaeg11x',
-    api_key: '168123699794666',
-    api_secret: '4Aqqe1vXL8DeMhOma7gHHeLmW9M'
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
 
@@ -83,7 +83,6 @@ const generateUserName = async (email) => {
     }
     return username;
 };
-
 
 // User Signup
 server.post('/signup', async (req, res) => {
@@ -222,13 +221,27 @@ server.get("/trending-blogs", async (req, res) => {
  
 });
 
-server.get('/latest-blog', (req, res) => {
+server.post("/all-latest-blogs-count", (req, res) =>{
+    Blog.countDocuments({draft: false})
+    .then(count =>{
+        return res.status(200).json({totalDocs: count}) 
+    })
+    .catch(err =>{
+        return res.status(500).json({error: err.message})
+    })
+})
+
+
+server.post('/latest-blog', (req, res) => {
+
+    let {page} = req.body;
     let maxLimit = 5;
 
     Blog.find({ draft: false })
         .populate("author", "personal_info.profile_img personal_info.username personal_info.fullname -_id") // Populate the `author` field with `personal_info`
         .sort({ publishedAt: -1 }) // Sort in descending order of published date
         .select("blog_id title des banner tags activity publishedAt -_id") // Select only the necessary fields for the blog
+        .skip((page - 1) * maxLimit)
         .limit(maxLimit)
         .then(blogs => {
             return res.status(200).json({ blogs });
@@ -238,18 +251,28 @@ server.get('/latest-blog', (req, res) => {
         });
 });
 
-  
-
 
 server.post("/search-blogs", (req, res) =>{
-    let {tag} = req.body
-    let findQuery = {tags: tag, draft: false}
-    let maxLimit = 5;
+    let {tag, page, author, query} = req.body
+    let findQuery;
+
+
+    if (tag) {
+        findQuery = { tags: tag, draft: false };
+    } else if (query) { // Added `query` condition inside `else if`
+        findQuery = { draft: false, title: new RegExp(query, "i") };
+    }else if(author){
+        findQuery = { author, draft: false };
+    }
+
+
+    let maxLimit = 2;
 
     Blog.find(findQuery)
     .populate("author", "personal_info.profile_img personal_info.username personal_info.fullname -_id") // Populate the `author` field with `personal_info`
         .sort({ publishedAt: -1 }) // Sort in descending order of published date
         .select("blog_id title des banner tags activity publishedAt -_id") // Select only the necessary fields for the blog
+        .skip((page - 1) * maxLimit)
         .limit(maxLimit)
         .then(blogs => {
             return res.status(200).json({ blogs });
@@ -260,12 +283,58 @@ server.post("/search-blogs", (req, res) =>{
         });
 })
 
+server.post("/search-blogs-count", (req, res) =>{
+    let {tag, author, query} = req.body;
+    let findQuery;
+    if (tag) {
+        findQuery = { tags: tag, draft: false };
+    } else if (query) { // Added `query` condition inside `else if`
+        findQuery = { draft: false, title: new RegExp(query, "i") };
+    }else if(author){
+        findQuery = { author, draft: false };
+    }
 
 
 
+    Blog.countDocuments(findQuery)
+    .then(count =>{
+        return res.status(200).json({totalDocs: count}) 
+    })
+    .catch(err =>{
+        console.log(err.message)
+        return res.status(500).json({error: err.message})
+    })
+})
 
 
+server.post("/search-users", (req, res) => {
+    let { query } = req.body; 
+    console.log("this is user query", query);
 
+    User.find({ "personal_info.username": new RegExp(query, "i") })  // Use correct variable name
+        .limit(50)
+        .select("personal_info.username personal_info.fullname personal_info.profile_img -_id")
+        .then(users => {  // Fixed typo in then
+            return res.status(200).json({ users });
+        })
+        .catch(err => {
+            return res.status(500).json({ error: err.message });
+        });
+});
+
+
+server.post("/get-profile", (req, res) =>{
+    let {username} = req.body;
+    User.findOne({"personal_info.username": username})
+    .select("-personal_info.password -google_auth -updatedAt -blogs")
+    .then(user => {
+        return res.status(200).json(user)
+    })
+    .catch(err =>{
+        console.log(err)
+        return res.status(500).json({error: err.message})
+    })
+})
 
 
 server.post('/create-blog', verifyJWT, (req, res) => {
@@ -333,12 +402,25 @@ server.post('/create-blog', verifyJWT, (req, res) => {
 });
 
 
-
-
-
-
-
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

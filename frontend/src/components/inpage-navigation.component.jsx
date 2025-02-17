@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+
 export let activeTabLineRef;
 export let activeTabRef;
 
@@ -8,8 +9,8 @@ const InPageNavigation = ({
   defaultActiveIndex = 0,
   children,
 }) => {
-   activeTabLineRef = useRef();
-   activeTabRef = useRef();
+  activeTabLineRef = useRef();
+  activeTabRef = useRef();
   let [InPageNavIndex, setInPageNavIndex] = useState(defaultActiveIndex);
 
   const changePageState = (btn, index) => {
@@ -37,8 +38,8 @@ const InPageNavigation = ({
               key={index}
               className={
                 "p-4 px-5 capitalize " +
-                (InPageNavIndex === index ? "text-black" : "text-gray-500 ") +
-                (defaultHidden.includes(route) ? "md:hidden" : "")
+                (InPageNavIndex === index ? "text-black" : "text-gray-custom") + // Adjusted text-gray-500 for better inactive state
+                (defaultHidden.includes(route) ? " md:hidden" : "")
               }
               onClick={(e) => {
                 changePageState(e.target, index);
@@ -51,7 +52,7 @@ const InPageNavigation = ({
 
         <hr
           ref={activeTabLineRef}
-          className="absolute bottom-0 h-1 bg-black transition-all duration-300"
+          className="absolute bottom-0 h-0 bg-black transition-all duration-300"
         />
       </div>
 
@@ -62,5 +63,3 @@ const InPageNavigation = ({
 };
 
 export default InPageNavigation;
-
-
