@@ -42,7 +42,6 @@ server.use(cors());
 mongoose.connect(process.env.DB_LOCATION, { autoIndex: true })
     .then(() => console.log('Connected to MongoDB'))
     .catch((err) => {
-        console.error('MongoDB connection failed', err);
         process.exit(1);
     });
 
@@ -214,10 +213,7 @@ server.get("/trending-blogs", async (req, res) => {
             .sort({ "activity.total_read": -1, "activity.total_like": -1, "publishedAt": -1 })
             .select("blog_id title publishedAt -_id") // Select only the necessary fields for the blog
             .limit(5);
-
-        console.log(blogs);  // Add this to check if `author` is populated correctly
-
-        return res.status(200).json({ blogs });
+            return res.status(200).json({ blogs });
  
 });
 
@@ -293,9 +289,7 @@ server.post("/search-blogs-count", (req, res) =>{
     }else if(author){
         findQuery = { author, draft: false };
     }
-
-
-
+    
     Blog.countDocuments(findQuery)
     .then(count =>{
         return res.status(200).json({totalDocs: count}) 
@@ -309,7 +303,6 @@ server.post("/search-blogs-count", (req, res) =>{
 
 server.post("/search-users", (req, res) => {
     let { query } = req.body; 
-    console.log("this is user query", query);
 
     User.find({ "personal_info.username": new RegExp(query, "i") })  // Use correct variable name
         .limit(50)
@@ -363,8 +356,6 @@ server.post('/create-blog', verifyJWT, (req, res) => {
             return res.status(403).json({ "error": "Provide up to 10 tags to publish your blog" });
         }
     }
-
-   
 
     let blog_id = title.replace(/[^a-zA-Z0-9]/g, ' ').replace(/\s+/g, "-").trim() + nanoid();
 

@@ -15,7 +15,7 @@ const HomePage = () => {
   const [blogs, setBlog] = useState(null);
   const [trendingBlogs, setTrendingBlogs] = useState(null);
   let [pageState, setPageState] = useState("home");
-  let categories = ["programming", "hollywood", "sports", "cooking", "tech", "finances", "travel"];
+  let categories = ["Full Stack", "React", "Express", "MongoDB", "Node", "MERN", "Next", "No-Blogs"];
 
   const fetchTrendingBlogs = async () => {
     axios
@@ -46,7 +46,8 @@ const HomePage = () => {
   };
 
   const loadByCategory = (e) => {
-    let category = e.target.innerText.toLowerCase();
+    let category = e.target.innerText;
+    console.log(category);
     setBlog(null);
 
     if (pageState === category) {
