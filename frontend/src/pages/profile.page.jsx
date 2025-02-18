@@ -104,7 +104,7 @@ const ProfilePage = () => {
             <img
               src={profile_img}
               alt="Profile"
-              className="w-48 h-48 bg-grey rounded-full md:w-31 md:h-32"
+              className="w-48 h-58 bg-grey rounded-full  md:w-38 md:h-48"
             />
             <h1 className="text-xl capitalize h-6">{fullname}</h1>
             <p>

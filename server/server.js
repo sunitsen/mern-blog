@@ -12,7 +12,20 @@ import Blog from "./Schema/Blog.js";
 import admin from "firebase-admin";
 
 // use own servive account key from firebsde project setting > service account
-import serviceAccountKey from "../mern-blog-74aa2-firebase-adminsdk-fbsvc-808d30de2c.json" assert { type: "json" };
+const serviceAccountKey = {
+    type: process.env.FIREBASE_TYPE,
+    project_id: process.env.FIREBASE_PROJECT_ID,
+    private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
+    private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+    client_email: process.env.FIREBASE_CLIENT_EMAIL,
+    client_id: process.env.FIREBASE_CLIENT_ID,
+    auth_uri: process.env.FIREBASE_AUTH_URI,
+    token_uri: process.env.FIREBASE_TOKEN_URI,
+    auth_provider_x509_cert_url: process.env.FIREBASE_AUTH_PROVIDER_CERT_URL,
+    client_x509_cert_url: process.env.FIREBASE_CLIENT_CERT_URL,
+    universe_domain: process.env.FIREBASE_UNIVERSE_DOMAIN,
+}
+
 import { getAuth } from "firebase-admin/auth";
 
 // Schema
@@ -42,7 +55,6 @@ server.use(cors());
 mongoose.connect(process.env.DB_LOCATION, { autoIndex: true })
     .then(() => console.log('Connected to MongoDB'))
     .catch((err) => {
-        console.error('MongoDB connection failed', err);
         process.exit(1);
     });
 
@@ -214,10 +226,7 @@ server.get("/trending-blogs", async (req, res) => {
             .sort({ "activity.total_read": -1, "activity.total_like": -1, "publishedAt": -1 })
             .select("blog_id title publishedAt -_id") // Select only the necessary fields for the blog
             .limit(5);
-
-        console.log(blogs);  // Add this to check if `author` is populated correctly
-
-        return res.status(200).json({ blogs });
+            return res.status(200).json({ blogs });
  
 });
 
@@ -293,9 +302,7 @@ server.post("/search-blogs-count", (req, res) =>{
     }else if(author){
         findQuery = { author, draft: false };
     }
-
-
-
+    
     Blog.countDocuments(findQuery)
     .then(count =>{
         return res.status(200).json({totalDocs: count}) 
@@ -309,7 +316,6 @@ server.post("/search-blogs-count", (req, res) =>{
 
 server.post("/search-users", (req, res) => {
     let { query } = req.body; 
-    console.log("this is user query", query);
 
     User.find({ "personal_info.username": new RegExp(query, "i") })  // Use correct variable name
         .limit(50)
@@ -363,8 +369,6 @@ server.post('/create-blog', verifyJWT, (req, res) => {
             return res.status(403).json({ "error": "Provide up to 10 tags to publish your blog" });
         }
     }
-
-   
 
     let blog_id = title.replace(/[^a-zA-Z0-9]/g, ' ').replace(/\s+/g, "-").trim() + nanoid();
 
