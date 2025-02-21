@@ -7,14 +7,17 @@ import BlogPostCard from '../components/blog-post.component';
 import MinimalBlogPost from '../components/nobanner-blog-post.component';
 import NoDataMessage from '../components/nodata.component';
 import { activeTabRef } from '../components/inpage-navigation.component';
+import { filterPaginationData } from '../common/filter-pagination-data';
+import LoadmoreDataBtn from '../components/load-more.component';
 
 const HomePage = () => {
 
   const [blogs, setBlog] = useState(null);
   const [trendingBlogs, setTrendingBlogs] = useState(null);
   let [pageState, setPageState] = useState("home");
-  let categories = ["programming", "hollywood", "sports", "cooking", "tech", "finances", "travel"];
-
+  let categories = ["Full Stack", "React", "Express", "MongoDB", "Node", "MERN", "Next", "No-Blogs"];
+ 
+  console.log(blogs)
   const fetchTrendingBlogs = async () => {
     axios
       .get(import.meta.env.VITE_SERVER_URL + '/trending-blogs')
@@ -26,19 +29,25 @@ const HomePage = () => {
       });
   };
 
-  const fetchLatestBlogs = async () => {
-    axios
-      .get(import.meta.env.VITE_SERVER_URL + '/latest-blog')
-      .then(({ data }) => {
-        setBlog(data.blogs);
-      })
-      .catch((err) => {
-        console.log(err);
+  const fetchLatestBlogs = async ({ page = 1 }) => {
+    try {
+      const { data } = await axios.post(import.meta.env.VITE_SERVER_URL + "/latest-blog", { page });
+
+      let formattedData = await filterPaginationData({
+        state: blogs, // Ensure `blogs` is defined
+        data: data.blogs,
+        page,
+        countRoute: "/all-latest-blogs-count",
       });
+
+      setBlog(formattedData);
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   const loadByCategory = (e) => {
-    let category = e.target.innerText.toLowerCase();
+    let category = e.target.innerText;
     setBlog(null);
 
     if (pageState === category) {
@@ -49,11 +58,19 @@ const HomePage = () => {
     setPageState(category);
   };
 
-  const fetchBlogsByCategory = () => {
+  const fetchBlogsByCategory = ({ page = 1 }) => {
     axios
-      .post(import.meta.env.VITE_SERVER_URL + '/search-blogs', { tag: pageState })
-      .then(({ data }) => {
-        setBlog(data.blogs);
+      .post(import.meta.env.VITE_SERVER_URL + '/search-blogs', { tag: pageState, page })
+      .then(async ({ data }) => {
+        let formattedData = await filterPaginationData({
+          state: blogs, // Ensure `blogs` is defined
+          data: data.blogs,
+          page,
+          data_to_send: { tag: pageState },
+          countRoute: "/search-blogs-count",
+        });
+
+        setBlog(formattedData);
       })
       .catch((err) => {
         console.log(err);
@@ -64,9 +81,9 @@ const HomePage = () => {
     activeTabRef.current.click();
 
     if (pageState === "home") {
-      fetchLatestBlogs();
+      fetchLatestBlogs({ page: 1 });
     } else {
-      fetchBlogsByCategory();
+      fetchBlogsByCategory({ page: 1 });
     }
 
     if (!trendingBlogs) {
@@ -85,17 +102,17 @@ const HomePage = () => {
                 blogs === null ? (
                   <Loader />
                 ) : (
-                  blogs.length ?
-                    blogs.map((blog, index) => {
+                  blogs.results.length ?
+                    blogs.results.map((blog, index) => {
                       return (
-                        <AnimatedWrapper key={index} transition={{ duration: 1, delay: index * 0.1 }}>
+                        <AnimatedWrapper key={blog._id || `blog-${index}`} transition={{ duration: 1, delay: index * 0.1 }}>
                           <BlogPostCard content={blog} author={blog.author.personal_info} />
                         </AnimatedWrapper>
                       );
                     })
                     : <NoDataMessage message="No blogs published" />
-                )
-              }
+                )}
+                <LoadmoreDataBtn state={blogs} fetchDataFun={(pageState === "home" ? fetchLatestBlogs : fetchBlogsByCategory)} />
             </>
 
             {
@@ -105,7 +122,7 @@ const HomePage = () => {
                 trendingBlogs.length ?
                   trendingBlogs.map((blog, index) => {
                     return (
-                      <AnimatedWrapper key={index} transition={{ duration: 1, delay: index * 0.1 }}>
+                      <AnimatedWrapper key={blog._id || `trending-${index}`} transition={{ duration: 1, delay: index * 0.1 }}>
                         <MinimalBlogPost blog={blog} index={index} />
                       </AnimatedWrapper>
                     );
@@ -127,9 +144,8 @@ const HomePage = () => {
                     return (
                       <button
                         onClick={loadByCategory}
-                        key={index}
-                        className={"tag " +
-                          (pageState === category ? "bg-black text-white" : "")}>
+                        key={index}  // Using category name as the key
+                        className={"tag " + (pageState === category ? "bg-black text-white" : "")}>
                         {category}
                       </button>
                     );
@@ -144,20 +160,20 @@ const HomePage = () => {
                 <i className='fi fi-rr-arrow-trend-up'></i>
               </h1>
               {
-              trendingBlogs === null ? (
-                <Loader />
-              ) : (
-                trendingBlogs.length ?
-                  trendingBlogs.map((blog, index) => {
-                    return (
-                      <AnimatedWrapper ke y={index} transition={{ duration: 1, delay: index * 0.1 }}>
-                        <MinimalBlogPost blog={blog} index={index} />
-                      </AnimatedWrapper>
-                    );
-                  })
-                  : <NoDataMessage message="No trending blogs" />
-              )
-            }
+                trendingBlogs === null ? (
+                  <Loader />
+                ) : (
+                  trendingBlogs.length ?
+                    trendingBlogs.map((blog, index) => {
+                      return (
+                        <AnimatedWrapper key={blog._id || `trending-${index}`} transition={{ duration: 1, delay: index * 0.1 }}>
+                          <MinimalBlogPost blog={blog} index={index} />
+                        </AnimatedWrapper>
+                      );
+                    })
+                    : <NoDataMessage message="No trending blogs" />
+                )
+              }
             </div>
           </div>
         </div>

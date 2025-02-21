@@ -6,7 +6,7 @@ const MinimalBlogPost = ({blog,index}) =>{
      publishedAt} = blog;
      
     return(
-       <Link to={`/blog/${id}`} className="flex gap-5 mb-8">
+       <Link to={`/blog/${id}`} className="flex gap-5 mb-8 border-color-gray border-b pb-5">
         <h1 className="blog-index">{index < 10 ? "0" + (index + 1) : index}</h1>
        
 

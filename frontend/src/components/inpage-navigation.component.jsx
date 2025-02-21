@@ -33,25 +33,26 @@ const InPageNavigation = ({
         {routes.map((route, index) => {
           return (
             <button
-              ref={index === defaultActiveIndex ? activeTabRef : null}
-              key={index}
-              className={
-                "p-4 px-5 capitalize " +
-                (InPageNavIndex === index ? "text-black" : "text-gray-500 ") +
-                (defaultHidden.includes(route) ? "md:hidden" : "")
-              }
-              onClick={(e) => {
-                changePageState(e.target, index);
-              }}
-            >
-              {route}
-            </button>
+            ref={index === defaultActiveIndex ? activeTabRef : null}
+            key={index}
+            className={
+              "p-4 px-5 capitalize " +
+              (InPageNavIndex === index ? "text-black" : "text-gray-custom") + // Adjusted text-gray-500 for better inactive state
+              (defaultHidden.includes(route) ? " md:hidden" : "")
+            }
+            onClick={(e) => {
+              changePageState(e.target, index);
+            }}
+          >
+            {route}
+          </button>
+          
           );
         })}
 
         <hr
           ref={activeTabLineRef}
-          className="absolute bottom-0 h-1 bg-black transition-all duration-300"
+          className="absolute bottom-0 h-0 bg-black transition-all duration-300"
         />
       </div>
 
